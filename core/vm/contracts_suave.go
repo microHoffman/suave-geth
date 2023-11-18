@@ -1,7 +1,9 @@
 package vm
 
 import (
+	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -107,6 +109,94 @@ func (b *suaveRuntime) fetchBids(targetBlock uint64, namespace string) ([]types.
 	}
 
 	return bids, nil
+}
+
+/* Blob merging precompiles */
+func (b *suaveRuntime) mergeBlobData(toAddresses []common.Address, blobsData [][]byte) ([][]byte, error) {
+	if len(toAddresses) != len(blobsData) {
+		return nil, fmt.Errorf("toAddresses and blobsData parameter should have the same length")
+	}
+
+	for _, toAddress := range toAddresses {
+		if len(toAddress) != 42 {
+			return nil, fmt.Errorf("To address must have 42 length.")
+		} else if toAddress.Hex() == "0x0000000000000000000000000000000000000000" {
+			return nil, fmt.Errorf("To address can't be null in the blob tx.")
+		}
+	}
+
+	const MAX_BLOB_SIZE_IN_BYTES = 1024 * 128 // 131072
+	for _, blobData := range blobsData {
+		if len(blobData) > MAX_BLOB_SIZE_IN_BYTES {
+			return nil, fmt.Errorf("One of the blob data is longer than max allowed length of %d bytes", MAX_BLOB_SIZE_IN_BYTES)
+		}
+	}
+
+	// Sort blobsData by length in descending order
+	sort.Slice(blobsData, func(i, j int) bool {
+		return len(blobsData[i]) > len(blobsData[j])
+	})
+
+	var result [][]byte
+	const (
+		ADDRESS_SIZE          = 42
+		BLOB_DATA_LENGTH_SIZE = 3
+	)
+	for len(blobsData) > 0 {
+		var mergedBlobSize int = 0
+		var mergedBlobData []byte
+		var removedBlobs [][]byte
+
+		for i, iteratedBlob := range blobsData {
+			iteratedBlobSize := len(iteratedBlob) + ADDRESS_SIZE + BLOB_DATA_LENGTH_SIZE
+			if (mergedBlobSize + iteratedBlobSize) <= MAX_BLOB_SIZE_IN_BYTES {
+				// adding toAddress
+				mergedBlobData = append(mergedBlobData, toAddresses[i].Bytes()...)
+				// adding length of the blob data, the length takes always 3 bytes
+				mergedBlobData = append(mergedBlobData, blobDataLengthToBytes(iteratedBlobSize)...)
+				// add the blob data itself
+				mergedBlobData = append(mergedBlobData, iteratedBlob...)
+
+				mergedBlobSize += iteratedBlobSize
+				removedBlobs = append(removedBlobs, iteratedBlob)
+			}
+		}
+
+		blobsData = removeUsedBlobs(blobsData, removedBlobs)
+		result = append(result, mergedBlobData)
+	}
+
+	// Sort blobsData by length in descending order
+	sort.Slice(result, func(i, j int) bool {
+		return len(result[i]) > len(result[j])
+	})
+
+	return result, nil
+}
+
+func blobDataLengthToBytes(length int) []byte {
+	return []byte{
+		byte(length >> 16),
+		byte(length >> 8),
+		byte(length),
+	}
+}
+
+func removeUsedBlobs(allBlobs, blobsToRemove [][]byte) [][]byte {
+	var result [][]byte
+
+OuterLoop:
+	for _, s := range allBlobs {
+		for _, r := range blobsToRemove {
+			// TODO use bytes.Equal or something else?
+			if bytes.Equal(s, r) {
+				continue OuterLoop
+			}
+		}
+		result = append(result, s)
+	}
+
+	return result
 }
 
 func mustParseAbi(data string) abi.ABI {
