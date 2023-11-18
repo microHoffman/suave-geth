@@ -72,11 +72,10 @@ func main() {
 	blobMargerContract.SendTransaction("submitBlobData", []interface{}{420, []byte(""), []byte("")}, testBlobData)
 
 	fmt.Println("(builder) Get merged blobs")
-	blobMargerContract.Address().Hex()
 	callMsg := ethereum.CallMsg{
 		From: testAddr1.Address(),
 		To:   (*common.Address)(blobMargerContract.Address().Bytes()),
-		Data: common.FromHex(""), // todo how to construct request
+		Data: common.FromHex(""), // todo how to construct request in golang?
 	}
 	val, err := mevmClt.RPC().CallContract(context.Background(), callMsg, nil)
 
