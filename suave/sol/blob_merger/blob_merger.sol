@@ -27,7 +27,7 @@ contract BlobMerger {
         for (uint i = 0; i < bids.length; i++) {
             blobsData[i] = Suave.confidentialRetrieve(bids[i], "blobMerger:v1");
         }
-        // todo merge blobs
-        return blobsData;
+        bytes[] memory mergedBlobs = Suave.mergeBlobData(blobsData);
+        return mergedBlobs;
     }
 }
