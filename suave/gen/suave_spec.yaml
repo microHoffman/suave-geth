@@ -197,3 +197,15 @@ functions:
       fields:
         - name: encodedBundle
           type: bytes
+  - name: mergeBlobData
+    address: "0x0000000000000000000000000000042042042001"
+    isConfidential: false
+    input:
+      - name: toAddresses
+        type: address[]
+      - name: blobsData
+        type: bytes[]
+    output:
+      fields:
+        - name: output1
+          type: bytes[]

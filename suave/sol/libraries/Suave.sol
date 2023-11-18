@@ -53,6 +53,8 @@ library Suave {
 
     address public constant FILL_MEV_SHARE_BUNDLE = 0x0000000000000000000000000000000043200001;
 
+    address public constant MERGE_BLOB_DATA = 0x0000000000000000000000000000042042042001;
+
     address public constant NEW_BID = 0x0000000000000000000000000000000042030000;
 
     address public constant SIGN_ETH_TRANSACTION = 0x0000000000000000000000000000000040100001;
@@ -151,6 +153,19 @@ library Suave {
         }
 
         return data;
+    }
+
+    function mergeBlobData(address[] memory toAddresses, bytes[] memory blobsData)
+        internal
+        view
+        returns (bytes[] memory)
+    {
+        (bool success, bytes memory data) = MERGE_BLOB_DATA.staticcall(abi.encode(toAddresses, blobsData));
+        if (!success) {
+            revert PeekerReverted(MERGE_BLOB_DATA, data);
+        }
+
+        return abi.decode(data, (bytes[]));
     }
 
     function newBid(

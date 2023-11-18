@@ -87,6 +87,16 @@ library SuaveForge {
         return data;
     }
 
+    function mergeBlobData(address[] memory toAddresses, bytes[] memory blobsData)
+        internal
+        view
+        returns (bytes[] memory)
+    {
+        bytes memory data = forgeIt("0x0000000000000000000000000000042042042001", abi.encode(toAddresses, blobsData));
+
+        return abi.decode(data, (bytes[]));
+    }
+
     function newBid(
         uint64 decryptionCondition,
         address[] memory allowedPeekers,
