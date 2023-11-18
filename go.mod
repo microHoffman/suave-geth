@@ -1,6 +1,8 @@
 module github.com/ethereum/go-ethereum
 
-go 1.19
+go 1.21.3
+
+toolchain go1.21.4
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v0.3.0
@@ -106,6 +108,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/ferranbt/fastssz v0.1.3 // indirect
+	github.com/flashbots/suapp-examples v0.0.0-20231118090603-803be8d8e147
 	github.com/garslo/gogen v0.0.0-20170306192744-1d203ffc1f61 // indirect
 	github.com/getsentry/sentry-go v0.18.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
