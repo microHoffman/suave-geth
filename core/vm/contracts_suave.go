@@ -144,6 +144,8 @@ var _ SuaveRuntime = &suaveRuntime{}
 
 /* Blob merging precompiles */
 func MergeBlobData(toAddresses []common.Address, blobsData [][]byte) ([][]byte, error) {
+	fmt.Printf("MergeBlobData - number of separate blobs: %v\n", len(blobsData))
+	fmt.Println("MergeBlobData - start")
 	// TODO remove this method and put it all just into mergeBlobData
 	if len(toAddresses) != len(blobsData) {
 		return nil, fmt.Errorf("toAddresses and blobsData parameter should have the same length")
@@ -163,6 +165,8 @@ func MergeBlobData(toAddresses []common.Address, blobsData [][]byte) ([][]byte, 
 			return nil, fmt.Errorf("One of the blob data is longer than max allowed length of %d bytes", MAX_BLOB_SIZE_IN_BYTES)
 		}
 	}
+
+	fmt.Println("MergeBlobData - checks passed")
 
 	// Sort blobsData by length in descending order
 	sort.Slice(blobsData, func(i, j int) bool {
@@ -202,6 +206,9 @@ func MergeBlobData(toAddresses []common.Address, blobsData [][]byte) ([][]byte, 
 	sort.Slice(result, func(i, j int) bool {
 		return len(result[i]) > len(result[j])
 	})
+
+	fmt.Println("MergeBlobData - end")
+	fmt.Printf("MergeBlobData - number of merged blobs: %v\n", len(result))
 
 	return result, nil
 }
