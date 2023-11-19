@@ -14,20 +14,19 @@ contract BlobMerger {
 	function submitBlobData(uint64 decryptionCondition, address[] memory bidAllowedPeekers, address[] memory bidAllowedStores) external payable {
 		require(Suave.isConfidential());
 
+		// TODO shall we rather compute the address + length offset here while storing the data?
+		//  then inside the getMergedBlobData we could just work with the blobs including the address + length offset
 		bytes memory blobData = Suave.confidentialInputs();
-
 		Suave.Bid memory bid = Suave.newBid(decryptionCondition, bidAllowedPeekers, bidAllowedStores, "blobMerger:v1");
-
 		Suave.confidentialStore(bid.id, "blobMerger:v1", blobData);
 		emit NewBlobSubmited(bid.id, bid.decryptionCondition, bid.allowedPeekers);
 	}
 
-    function getMergedBlobData(Suave.BidId[] memory bids) external view returns (bytes[] memory) {
-        bytes[] memory blobsData = new bytes[](bids.length);
-        for (uint i = 0; i < bids.length; i++) {
-            blobsData[i] = Suave.confidentialRetrieve(bids[i], "blobMerger:v1");
+    function getMergedBlobData(address[] memory toAddresses, Suave.BidId[] memory bidIds) external view returns (bytes[] memory) {
+		bytes[] memory blobsData = new bytes[](bidIds.length);
+        for (uint i = 0; i < bidIds.length; i++) {
+            blobsData[i] = Suave.confidentialRetrieve(bidIds[i], "blobMerger:v1");
         }
-        // todo merge blobs
-        return blobsData;
+		return Suave.mergeBlobData(toAddresses, blobsData);
     }
 }

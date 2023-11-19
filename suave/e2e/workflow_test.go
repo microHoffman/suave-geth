@@ -3,11 +3,13 @@ package e2e
 import (
 	"context"
 	"crypto/ecdsa"
+	crand "crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
+	mrand "math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -44,6 +46,7 @@ import (
 	"github.com/flashbots/go-boost-utils/bls"
 	"github.com/flashbots/go-boost-utils/ssz"
 	"github.com/mitchellh/mapstructure"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
